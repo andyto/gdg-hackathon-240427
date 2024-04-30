@@ -80,6 +80,34 @@ export default function HtpTest() {
     });
   }, [drawing]);
 
+  const onFollowUp1 = async () => {
+    await chat({
+      id: id!,
+      userPrompt: "It's my house!!!",
+    });
+  };
+
+  const onFollowUp2 = async () => {
+    await chat({
+      id: id!,
+      userPrompt: "It's my house!!!",
+    });
+  };
+
+  const onFollowUp3 = async () => {
+    await chat({
+      id: id!,
+      userPrompt: "The tree is green.",
+    });
+  };
+
+  const onFollowUp4 = async () => {
+    await chat({
+      id: id!,
+      userPrompt: "I like my picture.",
+    });
+  };
+
   return (
     <main>
       <h1>Step1</h1>
@@ -94,6 +122,10 @@ export default function HtpTest() {
       </div>
       <div className={"p-4"}>
         <Button onClick={onSubmitDrawing}>Submit</Button>
+        <Button onClick={onFollowUp1}>Follow up 1</Button>
+        <Button onClick={onFollowUp2}>Follow up 2</Button>
+        <Button onClick={onFollowUp3}>Follow up 3</Button>
+        <Button onClick={onFollowUp4}>Follow up 4</Button>
       </div>
     </main>
   );
