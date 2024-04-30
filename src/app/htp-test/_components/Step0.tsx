@@ -1,6 +1,6 @@
 // import {useAppStore} from "@/app/htp-test/_components/AppStore";
 
-import { runP1 } from "@/lib/gemini";
+import { chat } from "@/lib/gemini";
 // import { Button } from "@/components/ui/button";
 import { useCallback, useEffect, useState } from "react";
 import { DropEvent, FileRejection, useDropzone } from "react-dropzone";
@@ -19,7 +19,7 @@ const toBase64 = (file: File) =>
   });
 
 export default function Step0() {
-  // const stage = useAppStore((state) => state.stage);
+  const id = useAppStore((state) => state.id);
   const drawing = useAppStore((state) => state.drawing);
   const setDrawing = useAppStore((state) => state.setDrawing);
 
@@ -64,13 +64,17 @@ export default function Step0() {
     onDropRejected,
   });
 
-  const onSubmit = useCallback(async () => {
+  const onSubmitDrawing = useCallback(async () => {
     // runP1(drawing as File);
     if (!drawing) {
       return;
     }
     const drawingBase64 = (await toBase64(drawing)) as string;
-    await runP1(drawingBase64, drawing.type);
+    await chat({
+      id: id!,
+      drawingBase64,
+      mimeType: drawing.type,
+    });
   }, [drawing]);
 
   return (
@@ -86,7 +90,7 @@ export default function Step0() {
         )}
       </div>
       <div className={"p-4"}>
-        <Button onClick={onSubmit}>Submit</Button>
+        <Button onClick={onSubmitDrawing}>Submit</Button>
       </div>
     </main>
   );
