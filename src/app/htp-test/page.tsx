@@ -209,7 +209,7 @@ export default function HtpTest() {
                   <p>Upload your House Tree Person drawing to start ...</p>
                 ) : (
                   <p className="mt-8 text-center">
-                    Drag 'n' drop your House Tree Person drawing here, or click
+                    Drag &apos;n&apos; drop your House Tree Person drawing here, or click
                     to select files
                   </p>
                 )}
