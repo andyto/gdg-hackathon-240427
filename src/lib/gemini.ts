@@ -91,7 +91,7 @@ export const chat = async (props: TextChatProps | ImageChatProps) => {
     ]);
   }
 
-  console.log(res.response.text());
+  // console.log(res.response.text());
 
   return res.response.text();
 };

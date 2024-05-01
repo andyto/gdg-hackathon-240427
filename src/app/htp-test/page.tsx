@@ -1,7 +1,13 @@
 "use client";
 
 import { useAppStore } from "@/app/htp-test/_components/AppStore";
-import { useCallback, useEffect, useState } from "react";
+import {
+  ReactNode,
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { DropEvent, FileRejection, useDropzone } from "react-dropzone";
 import { chat } from "@/lib/gemini";
@@ -25,7 +31,7 @@ const toBase64 = (file: File) =>
     reader.readAsDataURL(file);
     reader.onload = () =>
       resolve(
-        (reader.result as string).replace("data:", "").replace(/^.+,/, "")
+        (reader.result as string).replace("data:", "").replace(/^.+,/, ""),
       );
     reader.onerror = reject;
   });
@@ -37,6 +43,24 @@ export default function HtpTest() {
   const setDrawing = useAppStore((state) => state.setDrawing);
 
   const [imageSrc, setImageSrc] = useState<string | undefined>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [inputText, setInputText] = useState<string>("");
+
+  const [chats, setChats] = useState<
+    {
+      isSelf: boolean;
+      message: string | ReactNode;
+      receivedAt: Date;
+    }[]
+  >([]);
+
+  const pushChat = (chat: {
+    isSelf: boolean;
+    message: string | ReactNode;
+    receivedAt: Date;
+  }) => {
+    setChats((prev) => [...prev, chat]);
+  };
 
   useEffect(() => {
     genId();
@@ -46,8 +70,15 @@ export default function HtpTest() {
     if (drawing) {
       const fr = new FileReader();
       fr.onload = function () {
-        // document.getElementById(outImage).src = fr.result;
         setImageSrc(fr.result as string);
+        pushChat({
+          isSelf: true,
+          message: (
+            <img src={fr.result as string} alt="drawing" className={"w-96"} />
+          ),
+          receivedAt: new Date(),
+        });
+        submitDrawing();
       };
       fr.readAsDataURL(drawing);
     } else {
@@ -58,20 +89,21 @@ export default function HtpTest() {
   const onDrop: <T extends File>(
     acceptedFiles: T[],
     fileRejections: FileRejection[],
-    event: DropEvent
+    event: DropEvent,
   ) => void = useCallback((acceptedFiles) => {
     setDrawing(acceptedFiles[0]);
   }, []);
 
   const onDropRejected: (
     fileRejections: FileRejection[],
-    event: DropEvent
+    event: DropEvent,
   ) => void = useCallback((acceptedFiles) => {
     // upload file to run query
     alert("File rejected");
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    disabled: !!drawing,
     onDrop,
     multiple: false,
     accept: {
@@ -81,44 +113,84 @@ export default function HtpTest() {
     onDropRejected,
   });
 
-  const onSubmitDrawing = useCallback(async () => {
+  const submitDrawing = async () => {
     if (!drawing) {
       return;
     }
+    setIsLoading(true);
     const drawingBase64 = (await toBase64(drawing)) as string;
-    await chat({
+    const textRes = await chat({
       id: id!,
       drawingBase64,
       mimeType: drawing.type,
     });
-  }, [drawing]);
 
-  const onFollowUp1 = async () => {
-    await chat({
-      id: id!,
-      userPrompt: "It's my house!!!",
+    setIsLoading(false);
+
+    pushChat({
+      isSelf: false,
+      message: textRes,
+      receivedAt: new Date(),
     });
   };
 
-  const onFollowUp2 = async () => {
-    await chat({
-      id: id!,
-      userPrompt: "It's my house!!!",
-    });
-  };
+  // const onFollowUp1 = async () => {
+  //   await chat({
+  //     id: id!,
+  //     userPrompt: "It's my house!!!",
+  //   });
+  // };
+  //
+  // const onFollowUp2 = async () => {
+  //   await chat({
+  //     id: id!,
+  //     userPrompt: "It's my house!!!",
+  //   });
+  // };
+  //
+  // const onFollowUp3 = async () => {
+  //   await chat({
+  //     id: id!,
+  //     userPrompt: "The tree is green.",
+  //   });
+  // };
+  //
+  // const onFollowUp4 = async () => {
+  //   await chat({
+  //     id: id!,
+  //     userPrompt: "I like my picture.",
+  //   });
+  // };
 
-  const onFollowUp3 = async () => {
-    await chat({
-      id: id!,
-      userPrompt: "The tree is green.",
-    });
-  };
+  const onSubmit = async (ev: SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
+    ev.preventDefault();
 
-  const onFollowUp4 = async () => {
-    await chat({
-      id: id!,
-      userPrompt: "I like my picture.",
+    if (!inputText) {
+      return;
+    }
+
+    pushChat({
+      isSelf: true,
+      message: inputText,
+      receivedAt: new Date(),
     });
+
+    setInputText("");
+
+    setIsLoading(true);
+
+    const textRes = await chat({
+      id: id!,
+      userPrompt: inputText,
+    });
+
+    pushChat({
+      isSelf: false,
+      message: textRes,
+      receivedAt: new Date(),
+    });
+
+    setIsLoading(false);
   };
 
   return (
@@ -128,7 +200,7 @@ export default function HtpTest() {
           <CardHeader>
             <CardTitle>Gemini HTP</CardTitle>
           </CardHeader>
-          <CardContent className="max-h-[70vh] overflow-auto ">
+          <CardContent className="overflow-auto">
             {!imageSrc && !drawing && (
               <div className="flex justify-center flex-col items-center p-4">
                 <Image src={InitialImage} alt="Initial" width={300} />
@@ -144,54 +216,31 @@ export default function HtpTest() {
               </div>
             )}
             {imageSrc && (
-              <div className="flex flex-col gap-4 pb-16 overflow-auto flex-1">
-                <ChatBubble
-                  isSelf={true}
-                  message={
-                    <img src={imageSrc} alt="drawing" className={"w-96"} />
-                  }
-                  receivedAt={new Date()}
-                />
-                <ChatBubble
-                  isSelf={false}
-                  message={
-                    "please describe the drawing in a few words, e.g. 'It's my house!!!'"
-                  }
-                  receivedAt={new Date()}
-                />
-                <ChatBubble
-                  isSelf={false}
-                  message={
-                    "please describe the drawing in a few words, e.g. 'It's my house!!!'"
-                  }
-                  receivedAt={new Date()}
-                />
-                <ChatBubble
-                  isSelf={false}
-                  message={
-                    "please describe the drawing in a few words, e.g. 'It's my house!!!'"
-                  }
-                  receivedAt={new Date()}
-                />
-              </div>
-            )}
-            {!drawing && (
-              <div className={"p-4"}>
-                <Button onClick={onSubmitDrawing}>Upload</Button>
-                {/* <Button onClick={onFollowUp1}>Follow up 1</Button>
-          <Button onClick={onFollowUp2}>Follow up 2</Button>
-          <Button onClick={onFollowUp3}>Follow up 3</Button>
-          <Button onClick={onFollowUp4}>Follow up 4</Button> */}
+              <div className="flex flex-col gap-4 pb-16 overflow-auto flex-1 h-[80vh]">
+                {chats.map((chat, index) => (
+                  <ChatBubble
+                    key={index}
+                    isSelf={chat.isSelf}
+                    message={chat.message}
+                    receivedAt={chat.receivedAt}
+                  />
+                ))}
+                {isLoading && <div>Loading...</div>}
               </div>
             )}
             {drawing && (
-              <div className="flex bg-gray-300 absolute bottom-0 left-0 right-0 p-4">
+              <form
+                className="flex bg-gray-300 absolute bottom-0 left-0 right-0 p-4"
+                onSubmit={onSubmit}
+              >
                 <Input
                   placeholder="Type your response here ..."
                   className="flex-1"
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
                 />
                 <Button>Send</Button>
-              </div>
+              </form>
             )}
           </CardContent>
         </Card>
