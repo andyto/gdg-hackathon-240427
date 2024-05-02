@@ -24,6 +24,9 @@ import {
 } from "@/components/ui/card";
 import ChatBubble from "./_components/ChatBubble";
 import { Input } from "@/components/ui/input";
+import GettingCoffeeImage from "@/assets/images/getting_coffee.svg";
+import { PaperAirplaneIcon } from "@heroicons/react/24/solid";
+import IconImage from "@/assets/images/icon-2.png";
 
 const toBase64 = (file: File) =>
   new Promise((resolve, reject) => {
@@ -31,7 +34,7 @@ const toBase64 = (file: File) =>
     reader.readAsDataURL(file);
     reader.onload = () =>
       resolve(
-        (reader.result as string).replace("data:", "").replace(/^.+,/, ""),
+        (reader.result as string).replace("data:", "").replace(/^.+,/, "")
       );
     reader.onerror = reject;
   });
@@ -71,13 +74,13 @@ export default function HtpTest() {
       const fr = new FileReader();
       fr.onload = function () {
         setImageSrc(fr.result as string);
-        pushChat({
-          isSelf: true,
-          message: (
-            <img src={fr.result as string} alt="drawing" className={"w-96"} />
-          ),
-          receivedAt: new Date(),
-        });
+        // pushChat({
+        //   isSelf: true,
+        //   message: (
+        //     <img src={fr.result as string} alt="drawing" className={"w-96"} />
+        //   ),
+        //   receivedAt: new Date(),
+        // });
         submitDrawing();
       };
       fr.readAsDataURL(drawing);
@@ -89,14 +92,14 @@ export default function HtpTest() {
   const onDrop: <T extends File>(
     acceptedFiles: T[],
     fileRejections: FileRejection[],
-    event: DropEvent,
+    event: DropEvent
   ) => void = useCallback((acceptedFiles) => {
     setDrawing(acceptedFiles[0]);
   }, []);
 
   const onDropRejected: (
     fileRejections: FileRejection[],
-    event: DropEvent,
+    event: DropEvent
   ) => void = useCallback((acceptedFiles) => {
     // upload file to run query
     alert("File rejected");
@@ -194,56 +197,91 @@ export default function HtpTest() {
   };
 
   return (
-    <main className="flex items-center h-[100vh]">
-      <div className="container mx-auto">
-        <Card {...getRootProps()} className={"border p-4 bg-gray-50 relative"}>
-          <CardHeader>
-            <CardTitle>Gemini HTP</CardTitle>
-          </CardHeader>
-          <CardContent className="overflow-auto">
-            {!imageSrc && !drawing && (
-              <div className="flex justify-center flex-col items-center p-4">
-                <Image src={InitialImage} alt="Initial" width={300} />
-                <input {...getInputProps()} />
-                {isDragActive ? (
-                  <p>Upload your House Tree Person drawing to start ...</p>
-                ) : (
-                  <p className="mt-8 text-center">
-                    Drag &apos;n&apos; drop your House Tree Person drawing here, or click
-                    to select files
-                  </p>
-                )}
+    <main className="relative flex flex-col h-[100vh] bg-yellow-50">
+      {imageSrc && (
+        <img
+          src={GettingCoffeeImage.src}
+          className="absolute bottom-0 right-0 z-0 opacity-30"
+        />
+      )}
+      <div
+        className="absolute h-20 left-0 right-0 top-0 p-4"
+        style={{
+          boxShadow: "0 2px 4px 0 rgba(0,0,0,.1)",
+        }}
+      >
+        <div className="container mx-auto">
+          <div className="text-3xl font-semibold flex">
+            <img src={IconImage.src} className="w-14 h-14 inline-block mr-4" />
+            <div>
+              Gemini HTP Test
+              <div className="text-sm font-normal">House Tree Person</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="h-20 w-full"></div>
+      <div className="mt-8 container mx-auto">
+        {!imageSrc && (
+          <Card {...getRootProps()} className={"border p-4 relative bg-white"}>
+            {/* <CardHeader>
+              <CardTitle>Gemini HTP</CardTitle>
+            </CardHeader> */}
+            <CardContent className="overflow-auto">
+              {!imageSrc && !drawing && (
+                <div className="flex justify-center flex-col items-center p-4">
+                  <Image src={InitialImage} alt="Initial" width={300} />
+                  <input {...getInputProps()} />
+                  {isDragActive ? (
+                    <p>Upload your House Tree Person drawing to start ...</p>
+                  ) : (
+                    <p className="mt-8 text-center">
+                      Drag &apos;n&apos; drop your House Tree Person drawing
+                      here, or click to select files
+                    </p>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {imageSrc && (
+          <div className="mt-8">
+            <div className="flex justify-center">
+              <div className="frame max-w-[500px]">
+                <img src={imageSrc} />
               </div>
-            )}
-            {imageSrc && (
-              <div className="flex flex-col gap-4 pb-16 overflow-auto flex-1 h-[80vh]">
-                {chats.map((chat, index) => (
-                  <ChatBubble
-                    key={index}
-                    isSelf={chat.isSelf}
-                    message={chat.message}
-                    receivedAt={chat.receivedAt}
-                  />
-                ))}
-                {isLoading && <div>Loading...</div>}
-              </div>
-            )}
-            {drawing && (
-              <form
-                className="flex bg-gray-300 absolute bottom-0 left-0 right-0 p-4"
-                onSubmit={onSubmit}
-              >
+            </div>
+            <div className="mt-8 flex flex-col gap-4 pb-16 overflow-auto flex-1 max-h-[60vh] no-scrollbar relative">
+              {chats.map((chat, index) => (
+                <ChatBubble
+                  key={index}
+                  isSelf={chat.isSelf}
+                  message={chat.message}
+                  receivedAt={chat.receivedAt}
+                />
+              ))}
+              {isLoading && <div>Loading...</div>}
+            </div>
+            <form
+              className="absolute bottom-0 left-0 right-0 p-4"
+              onSubmit={onSubmit}
+            >
+              <div className="container mx-auto flex gap-8">
                 <Input
                   placeholder="Type your response here ..."
-                  className="flex-1"
+                  className="rounded-full focus-visible:ring-green-400"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                 />
-                <Button>Send</Button>
-              </form>
-            )}
-          </CardContent>
-        </Card>
+                <Button className="rounded-full bg-green-400">
+                  <PaperAirplaneIcon className="w-6 h-6" />
+                </Button>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
     </main>
   );

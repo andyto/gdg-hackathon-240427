@@ -71,9 +71,7 @@ export const chat = async (props: TextChatProps | ImageChatProps) => {
   if (!chatDb.has(id)) {
     chatDb.set(id, new Chat(id));
   }
-
   const chat = chatDb.get(id)!;
-
   console.log(chat.chatCount);
   let res;
   if ("userPrompt" in props) {
@@ -82,7 +80,6 @@ export const chat = async (props: TextChatProps | ImageChatProps) => {
     const imageParts = [
       fileToGenerativePart(props.drawingBase64, props.mimeType),
     ];
-
     res = await chat.sendMessage([
       toPrompt({
         systemPrompt: sysPromptPicture,
@@ -90,8 +87,6 @@ export const chat = async (props: TextChatProps | ImageChatProps) => {
       ...imageParts,
     ]);
   }
-
   // console.log(res.response.text());
-
   return res.response.text();
 };

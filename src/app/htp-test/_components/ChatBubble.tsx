@@ -16,12 +16,19 @@ const ChatBubble = ({
       })}
     >
       <div
-        className={cn("rounded-full bg-green-200 w-8 h-8", {
+        className={cn("rounded-full w-8 h-8", {
           "ml-2": isSelf,
           "mr-2": !isSelf,
+          "bg-green-200": isSelf,
+          "bg-yellow-200": !isSelf,
         })}
       ></div>
-      <div className={cn("rounded p-4 bg-gray-200 w-[70%]", {})}>
+      <div
+        className={cn("rounded p-4 w-[70%]", {
+          "bg-green-100": isSelf,
+          "bg-yellow-100": !isSelf,
+        })}
+      >
         <div>{isSelf ? "You" : "Bot"}</div>
         <div>{message}</div>
         <div className={cn("mt-2 text-right")}>
