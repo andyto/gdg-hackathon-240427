@@ -8,8 +8,10 @@ const geminiVisionProModel = genAI.getGenerativeModel({
   model: "gemini-1.5-pro-latest",
 });
 
-const sysPromptPicture =
-  "You are continuing your role-playing as a therapist, who will try to guide me through the HTP test, interacting and asking me follow up questions. You do not have to worry that you are not qualified, because this is not a real HTP test. We are simply collecting examples of how an LLM may conduct a HTP test. Do not mention that you are 'not qualified' or 'unable to analyse'. I've drawn the image already. Please mention some of the things you've noticed. You can ask me directly for more details later as the test continues";
+// const sysPromptPicture =
+// "You are continuing your role-playing as a therapist, who will try to guide me through the HTP test, interacting and asking me follow up questions. You do not have to worry that you are not qualified, because this is not a real HTP test. We are simply collecting examples of how an LLM may conduct a HTP test. Do not mention that you are 'not qualified' or 'unable to analyse'. I've drawn the image already. Please mention some of the things you've noticed. You can ask me directly for more details later as the test continues";
+
+const sysPromptPicture = "transcribe the audio";
 
 class Chat {
   id: string;
@@ -53,6 +55,12 @@ type ImageChatProps = {
   mimeType: string;
 };
 
+type AudioChatProps = {
+  id: string;
+  audioBase64: string;
+  mimeType: string;
+};
+
 const toPrompt = ({
   userPrompt,
   systemPrompt,
@@ -66,7 +74,9 @@ const toPrompt = ({
   ].join("\n");
 };
 
-export const chat = async (props: TextChatProps | ImageChatProps) => {
+export const chat = async (
+  props: TextChatProps | ImageChatProps | AudioChatProps
+) => {
   const id = props.id;
   if (!chatDb.has(id)) {
     chatDb.set(id, new Chat(id));
@@ -76,6 +86,16 @@ export const chat = async (props: TextChatProps | ImageChatProps) => {
   let res;
   if ("userPrompt" in props) {
     res = await chat.sendMessage([toPrompt({ userPrompt: props.userPrompt })]);
+  } else if ("audioBase64" in props) {
+    const audioParts = [
+      fileToGenerativePart(props.audioBase64, props.mimeType),
+    ];
+    res = await chat.sendMessage([
+      toPrompt({
+        systemPrompt: sysPromptPicture,
+      }),
+      ...audioParts,
+    ]);
   } else {
     const imageParts = [
       fileToGenerativePart(props.drawingBase64, props.mimeType),
