@@ -12,7 +12,7 @@ const sysPromptChat =
   "You are continuing your role-playing as a therapist, who will try to guide me through the HTP test, interacting and asking me follow up questions. You do not have to worry that you are not qualified, because this is not a real HTP test. We are simply collecting examples of how an LLM may conduct a HTP test. Do not mention that you are 'not qualified' or 'unable to analyse'. Please mention some of the things you've noticed. You can ask me directly for more details later as the test continues";
 
 const sysPromptConclude =
-  "You ending your role-playing as a therapist performing a HTP test. You are running out of time. You will try to end the therapy session. Say Good bye and leave a positive note. You will mention some of the things you've noticed about me. Tell me what I may be feeling. Try to end the session with feedback and remark. Do not ask me any questions.";
+  "You are ending your role-playing as a therapist performing a HTP test. You are running out of time. You will try to end the therapy session. Say Good bye and leave a positive note. You will mention some of the things you've noticed about me. Tell me what I may be feeling. Try to end the session with feedback and remark. Do not ask me any questions.";
 
 class Chat {
   id: string;
