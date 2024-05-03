@@ -23,7 +23,7 @@ function blobToBase64(blob: any) {
     const reader = new FileReader();
     reader.onloadend = () =>
       resolve(
-        (reader.result as string).replace("data:", "").replace(/^.+,/, "")
+        (reader.result as string).replace("data:", "").replace(/^.+,/, ""),
       );
     reader.readAsDataURL(blob);
   });
@@ -63,7 +63,7 @@ const Test = () => {
         console.log(base64);
         return chat({
           id: "audio",
-          audioBase64: base64,
+          audioBase64: base64 as string,
           mimeType: "audio/mp3",
         });
       })
