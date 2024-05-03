@@ -25,9 +25,18 @@ import {
 import ChatBubble from "./_components/ChatBubble";
 import { Input } from "@/components/ui/input";
 import GettingCoffeeImage from "@/assets/images/getting_coffee.svg";
-import { PaperAirplaneIcon } from "@heroicons/react/24/solid";
+import {
+  PaperAirplaneIcon,
+  MicrophoneIcon,
+  StopIcon,
+} from "@heroicons/react/24/solid";
 import IconImage from "@/assets/images/icon-2.png";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import MicRecorder from "mic-recorder-to-mp3";
+import useRecorder from "../hooks/audio";
+import { cn } from "@/lib/utils";
+
+const recorder = new MicRecorder({ bitRate: 128 });
 
 const toBase64 = (file: File) =>
   new Promise((resolve, reject) => {
@@ -49,6 +58,48 @@ export default function HtpTest() {
   const [imageSrc, setImageSrc] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [inputText, setInputText] = useState<string>("");
+
+  const { start, stop, blob, buffer, isRecording } = useRecorder(recorder);
+
+  useEffect(() => {
+    if (buffer.length > 0) {
+      const file = new File(buffer, "me-at-thevoice.mp3", {
+        type: "audio/mp3",
+        lastModified: Date.now(),
+      });
+
+      setIsLoading(true);
+      pushChat({
+        isSelf: true,
+        message: (
+          <audio controls>
+            <source src={URL.createObjectURL(file)} type="audio/mp3" />
+          </audio>
+        ),
+        receivedAt: new Date(),
+      });
+
+      toBase64(file)
+        .then((base64) => {
+          const textRes = chat({
+            id: id!,
+            audioBase64: base64 as string,
+            mimeType: "audio/mp3",
+          });
+
+          return textRes;
+        })
+        .then((textRes) => {
+          setIsLoading(false);
+
+          pushChat({
+            isSelf: false,
+            message: textRes,
+            receivedAt: new Date(),
+          });
+        });
+    }
+  }, [buffer]);
 
   const [chats, setChats] = useState<
     {
@@ -274,14 +325,35 @@ export default function HtpTest() {
           >
             <div className="container mx-auto flex gap-8">
               <Input
-                placeholder="Type your response here ..."
+                placeholder={
+                  isRecording ? "Recording..." : "Type your response here ..."
+                }
                 className="rounded-full focus-visible:ring-green-400"
                 value={inputText}
+                disabled={isRecording}
                 onChange={(e) => setInputText(e.target.value)}
               />
-              <Button className="rounded-full bg-green-400">
-                <PaperAirplaneIcon className="w-6 h-6" />
-              </Button>
+              <div className="flex gap-2">
+                <Button className="rounded-full bg-green-400">
+                  <PaperAirplaneIcon className="w-6 h-6" />
+                </Button>
+
+                <Button
+                  onClick={() => {
+                    !isRecording ? start() : stop();
+                  }}
+                  className={cn("rounded-full", {
+                    "bg-red-400": isRecording,
+                    "bg-green-400": !isRecording,
+                  })}
+                >
+                  {isRecording ? (
+                    <StopIcon className="w-6 h-6" />
+                  ) : (
+                    <MicrophoneIcon className="w-6 h-6" />
+                  )}
+                </Button>
+              </div>
             </div>
           </form>
         </>

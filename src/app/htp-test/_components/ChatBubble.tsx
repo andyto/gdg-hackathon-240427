@@ -16,7 +16,7 @@ const ChatBubble = ({
       })}
     >
       <div
-        className={cn("rounded-full w-8 h-8", {
+        className={cn("rounded-full w-6 h-6", {
           "ml-2": isSelf,
           "mr-2": !isSelf,
           "bg-green-200": isSelf,
@@ -29,8 +29,8 @@ const ChatBubble = ({
           "bg-yellow-100": !isSelf,
         })}
       >
-        <div>{isSelf ? "You" : "Bot"}</div>
-        <div>{message}</div>
+        <div className="font-bold">{isSelf ? "You" : "Counsellor Bot"}</div>
+        <div className="mt-2 overflow-hidden">{message}</div>
         <div className={cn("mt-2 text-right")}>
           {receivedAt.toLocaleTimeString()}
         </div>
