@@ -76,7 +76,7 @@ const toPrompt = ({
 };
 
 export const chat = async (
-  props: TextChatProps | ImageChatProps | AudioChatProps,
+  props: TextChatProps | ImageChatProps | AudioChatProps
 ) => {
   const id = props.id;
   if (!chatDb.has(id)) {

@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import GettingCoffeeImage from "@/assets/images/getting_coffee.svg";
 import { PaperAirplaneIcon } from "@heroicons/react/24/solid";
 import IconImage from "@/assets/images/icon-2.png";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const toBase64 = (file: File) =>
   new Promise((resolve, reject) => {
@@ -197,7 +198,7 @@ export default function HtpTest() {
   };
 
   return (
-    <main className="relative flex flex-col h-[100vh] bg-yellow-50">
+    <main className="relative flex flex-col h-[100vh] bg-yellow-50 overflow-y-hidden">
       {imageSrc && (
         <img
           src={GettingCoffeeImage.src}
@@ -211,7 +212,7 @@ export default function HtpTest() {
         }}
       >
         <div className="container mx-auto">
-          <div className="text-3xl font-semibold flex">
+          <div className="text-2xl font-semibold flex">
             <img src={IconImage.src} className="w-14 h-14 inline-block mr-4" />
             <div>
               Gemini HTP Test
@@ -220,69 +221,71 @@ export default function HtpTest() {
           </div>
         </div>
       </div>
-      <div className="h-20 w-full"></div>
-      <div className="mt-8 container mx-auto">
-        {!imageSrc && (
+      <div className="pb-20 w-full"></div>
+      {!imageSrc && (
+        <div className="container mx-auto mt-8">
           <Card {...getRootProps()} className={"border p-4 relative bg-white"}>
             {/* <CardHeader>
               <CardTitle>Gemini HTP</CardTitle>
             </CardHeader> */}
             <CardContent className="overflow-auto">
-              {!imageSrc && !drawing && (
-                <div className="flex justify-center flex-col items-center p-4">
-                  <Image src={InitialImage} alt="Initial" width={300} />
-                  <input {...getInputProps()} />
-                  {isDragActive ? (
-                    <p>Upload your House Tree Person drawing to start ...</p>
-                  ) : (
-                    <p className="mt-8 text-center">
-                      Drag &apos;n&apos; drop your House Tree Person drawing
-                      here, or click to select files
-                    </p>
-                  )}
-                </div>
-              )}
+              <div className="flex justify-center flex-col items-center p-4">
+                <Image src={InitialImage} alt="Initial" width={300} />
+                <input {...getInputProps()} />
+                {isDragActive ? (
+                  <p>Upload your House Tree Person drawing to start ...</p>
+                ) : (
+                  <p className="mt-8 text-center">
+                    Drag &apos;n&apos; drop your House Tree Person drawing here,
+                    or click to select files
+                  </p>
+                )}
+              </div>
             </CardContent>
           </Card>
-        )}
-
-        {imageSrc && (
-          <div className="mt-8">
-            <div className="flex justify-center">
-              <div className="frame max-w-[500px]">
-                <img src={imageSrc} />
-              </div>
+        </div>
+      )}
+      {imageSrc && (
+        <>
+          <div className="mt-8 text-center h-[20vh]">
+            <div className="frame">
+              <img src={imageSrc} className="h-[10vh]" />
             </div>
-            <div className="mt-8 flex flex-col gap-4 pb-16 overflow-auto flex-1 max-h-[60vh] no-scrollbar relative">
-              {chats.map((chat, index) => (
-                <ChatBubble
-                  key={index}
-                  isSelf={chat.isSelf}
-                  message={chat.message}
-                  receivedAt={chat.receivedAt}
-                />
-              ))}
-              {isLoading && <div>Loading...</div>}
-            </div>
-            <form
-              className="absolute bottom-0 left-0 right-0 p-4"
-              onSubmit={onSubmit}
-            >
-              <div className="container mx-auto flex gap-8">
-                <Input
-                  placeholder="Type your response here ..."
-                  className="rounded-full focus-visible:ring-green-400"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                />
-                <Button className="rounded-full bg-green-400">
-                  <PaperAirplaneIcon className="w-6 h-6" />
-                </Button>
-              </div>
-            </form>
           </div>
-        )}
-      </div>
+          <div className="mt-24 container mx-auto">
+            <ScrollArea className="h-[calc(100vh-16rem-20vh)]">
+              <div className="space-y-4">
+                {chats.map((chat, index) => (
+                  <ChatBubble
+                    key={index}
+                    isSelf={chat.isSelf}
+                    message={chat.message}
+                    receivedAt={chat.receivedAt}
+                  />
+                ))}
+                {isLoading && <div>Loading...</div>}
+              </div>
+              <div className="pb-16"></div>
+            </ScrollArea>
+          </div>
+          <form
+            className="absolute bottom-0 left-0 right-0 p-4 bg-yellow-50 shadow-md"
+            onSubmit={onSubmit}
+          >
+            <div className="container mx-auto flex gap-8">
+              <Input
+                placeholder="Type your response here ..."
+                className="rounded-full focus-visible:ring-green-400"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+              />
+              <Button className="rounded-full bg-green-400">
+                <PaperAirplaneIcon className="w-6 h-6" />
+              </Button>
+            </div>
+          </form>
+        </>
+      )}
     </main>
   );
 }
