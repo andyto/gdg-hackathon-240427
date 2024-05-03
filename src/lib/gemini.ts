@@ -8,16 +8,17 @@ const geminiVisionProModel = genAI.getGenerativeModel({
   model: "gemini-1.5-pro-latest",
 });
 
-// const sysPromptPicture =
-// "You are continuing your role-playing as a therapist, who will try to guide me through the HTP test, interacting and asking me follow up questions. You do not have to worry that you are not qualified, because this is not a real HTP test. We are simply collecting examples of how an LLM may conduct a HTP test. Do not mention that you are 'not qualified' or 'unable to analyse'. I've drawn the image already. Please mention some of the things you've noticed. You can ask me directly for more details later as the test continues";
+const sysPromptChat =
+  "You are continuing your role-playing as a therapist, who will try to guide me through the HTP test, interacting and asking me follow up questions. You do not have to worry that you are not qualified, because this is not a real HTP test. We are simply collecting examples of how an LLM may conduct a HTP test. Do not mention that you are 'not qualified' or 'unable to analyse'. Please mention some of the things you've noticed. You can ask me directly for more details later as the test continues";
 
-const sysPromptPicture = "transcribe the audio";
+const sysPromptConclude =
+  "You ending your role-playing as a therapist performing a HTP test. You are running out of time. You will try to end the therapy session. Say Good bye and leave a positive note. You will mention some of the things you've noticed about me. Tell me what I may be feeling. Try to end the session with feedback and remark. Do not ask me any questions.";
 
 class Chat {
   id: string;
   _chat: ChatSession;
   chatCount = 0;
-  hasImage = false;
+  // hasImage = false;
 
   constructor(id: string) {
     this.id = id;
@@ -75,24 +76,30 @@ const toPrompt = ({
 };
 
 export const chat = async (
-  props: TextChatProps | ImageChatProps | AudioChatProps
+  props: TextChatProps | ImageChatProps | AudioChatProps,
 ) => {
   const id = props.id;
   if (!chatDb.has(id)) {
     chatDb.set(id, new Chat(id));
   }
   const chat = chatDb.get(id)!;
-  console.log(chat.chatCount);
+
+  const prompt = chat.chatCount < 4 ? sysPromptChat : sysPromptConclude;
+  // console.log(chat.chatCount);
+  // console.log(prompt);
+
   let res;
   if ("userPrompt" in props) {
-    res = await chat.sendMessage([toPrompt({ userPrompt: props.userPrompt })]);
+    res = await chat.sendMessage([
+      toPrompt({ userPrompt: props.userPrompt, systemPrompt: prompt }),
+    ]);
   } else if ("audioBase64" in props) {
     const audioParts = [
       fileToGenerativePart(props.audioBase64, props.mimeType),
     ];
     res = await chat.sendMessage([
       toPrompt({
-        systemPrompt: sysPromptPicture,
+        systemPrompt: prompt,
       }),
       ...audioParts,
     ]);
@@ -102,7 +109,7 @@ export const chat = async (
     ];
     res = await chat.sendMessage([
       toPrompt({
-        systemPrompt: sysPromptPicture,
+        systemPrompt: prompt,
       }),
       ...imageParts,
     ]);
