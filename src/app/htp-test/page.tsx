@@ -6,6 +6,7 @@ import {
   SyntheticEvent,
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,8 @@ export default function HtpTest() {
   const [imageSrc, setImageSrc] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [inputText, setInputText] = useState<string>("");
+
+  const ref = useRef<HTMLDivElement>(null);
 
   const { start, stop, blob, buffer, isRecording } = useRecorder(recorder);
 
@@ -140,6 +143,12 @@ export default function HtpTest() {
       setImageSrc(undefined);
     }
   }, [drawing]);
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [ref, chats]);
 
   const onDrop: <T extends File>(
     acceptedFiles: T[],
@@ -316,7 +325,7 @@ export default function HtpTest() {
                 ))}
                 {isLoading && <div>Loading...</div>}
               </div>
-              <div className="pb-16"></div>
+              <div className="pb-16" ref={ref}></div>
             </ScrollArea>
           </div>
           <form
